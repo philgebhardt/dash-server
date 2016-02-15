@@ -1,7 +1,7 @@
 package org.foo.button.dao.impl;
 
 import org.foo.button.model.Button;
-import org.foo.org.foo.button.dao.ButtonDAO;
+import org.foo.button.dao.ButtonDAO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,9 +29,14 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
         PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM button WHERE id = ?");
         stmt.setString(1, id);
         ResultSet resultSet = stmt.executeQuery();
-        Button button = new Button();
-        button.setId(resultSet.getString("id"));
-        button.setName(resultSet.getString("name"));
+        Button button;
+        try {
+            button = new Button();
+            button.setId(resultSet.getString("id"));
+            button.setName(resultSet.getString("name"));
+        } catch(SQLException e) {
+            button=null;
+        }
         return button;
     }
 
@@ -52,10 +57,18 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
 
     @Override
     public void save(Button button) throws SQLException {
-        PreparedStatement stmt = getConn().prepareStatement("INSERT INTO button (id,name) VALUES(?,?)");
-        stmt.setString(1, button.getId());
-        stmt.setString(2, button.getName());
-        stmt.executeUpdate();
+        boolean buttonExists = findById(button.getId())!=null;
+        if(buttonExists) {
+            PreparedStatement stmt = getConn().prepareStatement("UPDATE button SET id = ?, name = ? WHERE id = ?");
+            stmt.setString(1, button.getId());
+            stmt.setString(2, button.getName());
+            stmt.executeUpdate();
+        } else {
+            PreparedStatement stmt = getConn().prepareStatement("INSERT INTO button (id,name) VALUES(?,?)");
+            stmt.setString(1, button.getId());
+            stmt.setString(2, button.getName());
+            stmt.executeUpdate();
+        }
     }
 
     @Override
@@ -70,5 +83,16 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
             buttons.add(button);
         }
         return buttons;
+    }
+
+    @Override
+    public void saveAll(Collection<Button> buttons) {
+        buttons.forEach((button) -> {
+            try {
+                save(button);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

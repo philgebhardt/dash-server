@@ -6,8 +6,6 @@ CREATE TABLE BUTTON(
     name CHAR(36) NOT NULL
 );
 
-INSERT INTO BUTTON (id,name) VALUES('f0:27:2d:3b:bd:3a', 'phils button');
-
 CREATE TABLE BUTTON_EVENT(
     id CHAR(36) NOT NULL,
     dttm_occurred DATETIME NOT NULL,

@@ -1,8 +1,11 @@
 package org.foo.app;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import org.foo.factory.ListenerFactory;
+import org.foo.loader.ButtonLoader;
 import org.foo.task.BaseTaskController;
 import org.foo.task.TaskController;
 import org.pcap4j.core.*;
@@ -11,11 +14,14 @@ import org.pcap4j.core.*;
 @SuppressWarnings("javadoc")
 public class Main {
 
-  public static void main(String[] commandArgs) throws PcapNativeException, NotOpenException, SQLException {
+  public static void main(String[] commandArgs) throws Exception {
 
     StartupConfig config = new StartupConfig(commandArgs);
-    TaskController controller = new BaseTaskController();
     ListenerFactory listenerFactory = ListenerFactory.newInstance(config);
+    ButtonLoader buttonLoader = new ButtonLoader(listenerFactory.getButtonDAO());
+    buttonLoader.load(new File(".buttons.json"));
+
+    TaskController controller = new BaseTaskController();
     controller.putTask("buttonlistener", listenerFactory.newButtonEventListener());
     controller.putTask("weblistener", listenerFactory.newWebListener());
     controller.startAll();

@@ -3,11 +3,10 @@ package org.foo.thread;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.Button;
 import org.foo.button.model.ButtonEvent;
-import org.foo.org.foo.button.dao.ButtonDAO;
+import org.foo.button.dao.ButtonDAO;
 import org.foo.task.ButtonEventDAOTask;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.EthernetPacket;
-import org.pcap4j.packet.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +80,7 @@ public class ButtonEventListener extends ButtonEventDAOTask {
                         if(packet instanceof EthernetPacket) {
                             EthernetPacket eth = (EthernetPacket) packet;
                             String addr1 = eth.getHeader().getSrcAddr().toString();
-                            LOGGER.info(addr1);
+                            LOGGER.info(packet.toString());
                             Date now = new Date();
                             ButtonEvent event = new ButtonEvent();
                             event.setId(addr1);
@@ -106,19 +105,20 @@ public class ButtonEventListener extends ButtonEventDAOTask {
     }
 
     private String _parseFilter(String filterParam) {
-        String filterStr = null;
+        String filterStr = filterParam;
         if(FILTER_USEDB.equals(filterParam)) {
             try {
                 Collection<Button> buttons = getButtonDAO().findAll();
                 if(buttons!=null && !buttons.isEmpty()) {
                     Iterator<Button> iter = buttons.iterator();
-                    StringBuilder sb = new StringBuilder("ether host ");
+                    StringBuilder sb = new StringBuilder("dst host 192.168.0.1 and arp and (ether src ");
                     do {
                         sb.append(iter.next().getId());
                         if(iter.hasNext()) {
                             sb.append(" or ");
                         }
                     } while(iter.hasNext());
+                    sb.append(")");
                     filterStr=sb.toString();
                 }
             } catch (SQLException e) {

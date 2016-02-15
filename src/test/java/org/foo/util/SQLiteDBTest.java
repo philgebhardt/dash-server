@@ -30,4 +30,12 @@ public class SQLiteDBTest {
     public File getDBFile() {
         return new File("target",this.getClass().getName().toString());
     }
+
+    public Connection getConn() {
+        return conn;
+    }
+
+    public void setConn(Connection conn) {
+        this.conn = conn;
+    }
 }

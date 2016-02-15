@@ -10,8 +10,6 @@ import java.util.Properties;
 public class StartupConfig {
 
     private Properties properties;
-    private ButtonEventDAO buttonEventDAO;
-
     public StartupConfig(String[] commandArgs) {
         try {
             this.properties = System.getProperties();
@@ -20,7 +18,6 @@ public class StartupConfig {
                 String[] pair = arg.split("=");
                 properties.setProperty(pair[0], pair[1]);
             }
-            this.buttonEventDAO = new SQLiteButtonEventDAO();
         } catch (Exception e) {
             throw new RuntimeException("CRASH", e);
         }

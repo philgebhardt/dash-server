@@ -1,10 +1,8 @@
 package org.foo.button.dao.impl;
 
 import org.apache.commons.io.FileUtils;
-import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.Button;
-import org.foo.button.model.ButtonEvent;
-import org.foo.org.foo.button.dao.ButtonDAO;
+import org.foo.button.dao.ButtonDAO;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

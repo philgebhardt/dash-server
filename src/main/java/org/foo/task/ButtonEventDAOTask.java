@@ -1,10 +1,7 @@
 package org.foo.task;
 
 import org.foo.button.dao.ButtonEventDAO;
-import org.foo.org.foo.button.dao.ButtonDAO;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.foo.button.dao.ButtonDAO;
 
 /**
  * Created by phil on 2/14/16.

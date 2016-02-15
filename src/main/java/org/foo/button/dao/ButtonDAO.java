@@ -1,4 +1,4 @@
-package org.foo.org.foo.button.dao;
+package org.foo.button.dao;
 
 import org.foo.button.model.Button;
 
@@ -13,4 +13,6 @@ public interface ButtonDAO {
     public Collection<Button> findByName(String id) throws SQLException;
     public void save(Button button) throws SQLException;
     public Collection<Button> findAll() throws SQLException;
+
+    public void saveAll(Collection<Button> buttons);
 }

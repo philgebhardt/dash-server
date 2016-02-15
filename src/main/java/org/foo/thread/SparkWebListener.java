@@ -2,8 +2,9 @@ package org.foo.thread;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.foo.button.dao.ButtonEventDAO;
+import org.foo.button.model.Button;
 import org.foo.button.model.ButtonEvent;
-import org.foo.org.foo.button.dao.ButtonDAO;
+import org.foo.button.dao.ButtonDAO;
 import org.foo.task.ButtonEventDAOTask;
 import org.foo.util.JsonDateDeserializer;
 import spark.Request;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import static spark.Spark.get;
+import static spark.Spark.post;
 
 /**
  * Created by phil on 2/14/16.
@@ -52,6 +54,26 @@ public class SparkWebListener extends ButtonEventDAOTask {
             Collection<ButtonEvent> events = getButtonEventDAO().findById(id, dateParams.FROM, dateParams.TILL);
             _prepareResponse(req, res);
             return mapper.writeValueAsString(events);
+        });
+
+        get("/buttons", (req, res) -> {
+            Collection<Button> buttons = getButtonDAO().findAll();
+            _prepareResponse(req, res);
+            return mapper.writeValueAsString(buttons);
+        });
+
+        get("/buttons/:id", (req, res) -> {
+            String id = req.params("id");
+            Button button = getButtonDAO().findById(id);
+            _prepareResponse(req, res);
+            return mapper.writeValueAsString(button);
+        });
+
+        post("/buttons", (req, res) -> {
+            Button button = mapper.readValue(req.body(), Button.class);
+            getButtonDAO().save(button);
+            res.status(204);
+            return "";
         });
     }
 

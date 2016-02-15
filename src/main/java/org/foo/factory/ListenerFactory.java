@@ -4,12 +4,11 @@ import org.foo.app.StartupConfig;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.dao.impl.SQLiteButtonDAO;
 import org.foo.button.dao.impl.SQLiteButtonEventDAO;
-import org.foo.org.foo.button.dao.ButtonDAO;
+import org.foo.button.dao.ButtonDAO;
 import org.foo.thread.ButtonEventListener;
 import org.foo.thread.SparkWebListener;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
