@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.dao.impl.SQLiteButtonEventDAO;
@@ -29,18 +30,23 @@ public class Main {
 
     ButtonEventDAO dao = new SQLiteButtonEventDAO();
     TaskController controller = new BaseTaskController();
-    controller.putTask("buttonlistener", new ButtonEventListener("localhost", "", dao));
+    controller.putTask("buttonlistener", new ButtonEventListener("0.0.0.0", "arp", dao));
     controller.putTask("weblistener", new SparkWebListener(dao));
     controller.startAll();
 
-    while (true) {
-      try {
-        Thread.sleep(1 * 1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } finally {
-        controller.stopAll();
-      }
+    try {
+      _chill();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } finally {
+      // clean up
+      controller.stopAll();
+    }
+  }
+
+  private static void _chill() throws InterruptedException {
+    while(true) {
+      Thread.sleep(1*1000);
     }
   }
 }
