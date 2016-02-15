@@ -77,12 +77,7 @@
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
       <version>2.9.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ullink.slack</groupId>
-      <artifactId>simpleslackapi</artifactId>
-      <version>0.5.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
