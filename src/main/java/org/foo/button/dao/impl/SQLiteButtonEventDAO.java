@@ -30,17 +30,15 @@ public class SQLiteButtonEventDAO implements ButtonEventDAO {
         stmt.executeUpdate();
     }
 
-    public Collection<ButtonEvent> findDateRange(Date from, Date till) throws Exception {
-        Collection<ButtonEvent> events = new ArrayList<>();
-        if(from==null && till==null) return events;
-
-        boolean fromOnly=till==null;
-        boolean tillOnly=from==null;
+    public Collection<ButtonEvent> findAll(Date from, Date till) throws Exception {
         PreparedStatement stmt;
-        if(fromOnly) {
+
+        if(from==null && till==null) {
+            stmt = conn.prepareStatement("SELECT * FROM button_event");
+        } else if(till==null) {
             stmt = conn.prepareStatement("SELECT * FROM button_event WHERE dttm_occurred >= ?");
             stmt.setDate(1, new java.sql.Date(from.getTime()));
-        } else if (tillOnly) {
+        } else if (from==null) {
             stmt = conn.prepareStatement("SELECT * FROM button_event WHERE dttm_occurred <= ?");
             stmt.setDate(1, new java.sql.Date(till.getTime()));
         } else {
@@ -52,29 +50,42 @@ public class SQLiteButtonEventDAO implements ButtonEventDAO {
         return resultToCollection(resultSet);
     }
 
-    private Collection<ButtonEvent> resultToCollection(ResultSet resultSet) throws SQLException {
-        Collection<ButtonEvent> events = new ArrayList<ButtonEvent>();
-        while (resultSet.next()) {
-            ButtonEvent event = new ButtonEvent();
-            event.setId(resultSet.getString("id"));
-            event.setDtmOccured(resultSet.getDate("dttm_occurred"));
-            events.add(event);
-        }
-        return events;
+    public Collection<ButtonEvent> findById(String id) throws Exception {
+        return findById(id, null, null);
     }
 
-    public Collection<ButtonEvent> findAllById(String id) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ?");
-        Collection<ButtonEvent> events = new ArrayList<ButtonEvent>();
-        stmt.setString(1, id);
+    @Override
+    public Collection<ButtonEvent> findById(String id, Date from, Date till) throws Exception {
+        PreparedStatement stmt;
+
+        if(from==null && till==null) {
+            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ?");
+            stmt.setString(1, id);
+        } else if(till==null) {
+            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred >= ?");
+            stmt.setString(1, id);
+            stmt.setDate(2, new java.sql.Date(from.getTime()));
+        } else if (from==null) {
+            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred <= ?");
+            stmt.setString(1, id);
+            stmt.setDate(2, new java.sql.Date(till.getTime()));
+        } else {
+            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred BETWEEN ? AND ?");
+            stmt.setString(1, id);
+            stmt.setDate(2, new java.sql.Date(from.getTime()));
+            stmt.setDate(3, new java.sql.Date(till.getTime()));
+        }
         ResultSet resultSet = stmt.executeQuery();
         return resultToCollection(resultSet);
     }
 
+    @Override
     public Collection<ButtonEvent> findAll() throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM button_event");
-        Collection<ButtonEvent> events = new ArrayList<ButtonEvent>();
-        ResultSet resultSet = stmt.executeQuery();
+        return findAll(null, null);
+    }
+
+    private Collection<ButtonEvent> resultToCollection(ResultSet resultSet) throws SQLException {
+        Collection<ButtonEvent> events = new ArrayList<>();
         while (resultSet.next()) {
             ButtonEvent event = new ButtonEvent();
             event.setId(resultSet.getString("id"));
@@ -83,4 +94,5 @@ public class SQLiteButtonEventDAO implements ButtonEventDAO {
         }
         return events;
     }
+
 }

@@ -30,7 +30,7 @@ public class Main {
 
     ButtonEventDAO dao = new SQLiteButtonEventDAO();
     TaskController controller = new BaseTaskController();
-    controller.putTask("buttonlistener", new ButtonEventListener("0.0.0.0", "arp", dao));
+    controller.putTask("buttonlistener", new ButtonEventListener("localhost", "", dao));
     controller.putTask("weblistener", new SparkWebListener(dao));
     controller.startAll();
 

@@ -4,10 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.ButtonEvent;
 import org.foo.task.ButtonEventDAOTask;
+import org.foo.util.JsonDateDeserializer;
+import spark.Request;
+import spark.Response;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 
+import static org.foo.util.JsonDateDeserializer.*;
 import static spark.Spark.get;
 
 /**
@@ -27,21 +33,48 @@ public class SparkWebListener extends ButtonEventDAOTask {
     public void run() {
 
         get("/events", (req, res) -> {
-            Collection<ButtonEvent> events = getButtonEventDAO().findAll();
-            res.header("Content-Type", "application/json");
+            DateParams dateParams = _getDateParams(req);
+            Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
+            _prepareResponse(req, res);
+            return mapper.writeValueAsString(events);
+        });
+
+        get("/events/", (req, res) -> {
+            DateParams dateParams = _getDateParams(req);
+            Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
+            _prepareResponse(req, res);
             return mapper.writeValueAsString(events);
         });
 
         get("/events/:id", (req, res) -> {
-            Collection<ButtonEvent> events = getButtonEventDAO().findAllById(req.params("id"));
-            res.header("Content-Type", "application/json");
+            String id = req.params("id");
+            DateParams dateParams = _getDateParams(req);
+            Collection<ButtonEvent> events = getButtonEventDAO().findById(id, dateParams.FROM, dateParams.TILL);
+            _prepareResponse(req, res);
             return mapper.writeValueAsString(events);
         });
+    }
 
-        get("/events/:id", (req, res) -> {
-            Collection<ButtonEvent> events = getButtonEventDAO().findAllById(req.params("id"));
-            res.header("Content-Type", "application/json");
-            return mapper.writeValueAsString(events);
-        });
+    private DateParams _getDateParams(Request req) throws ParseException {
+        String fromStr = req.queryParams("from");
+        String tillStr = req.queryParams("till");
+        Date from = (fromStr!=null) ? stringToDate(fromStr) : null;
+        Date till = (tillStr!=null) ? stringToDate(tillStr) : null;
+        return new DateParams(from,till);
+    }
+
+    private void _prepareResponse(Request req, Response res) {
+        res.header("Content-Type", "application/json");
+
+    }
+
+    private class DateParams {
+        public final Date FROM;
+        public final Date TILL;
+
+        public DateParams(Date from, Date till) {
+            FROM=from;
+            TILL=till;
+        }
     }
 }

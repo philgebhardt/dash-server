@@ -59,7 +59,7 @@ public class SQLiteButtonEventDAOTest {
         _saveNow();
         _saveNow();
 
-        assertThat(dao.findAllById(ID_TEST000).size()).isEqualTo(3);
+        assertThat(dao.findById(ID_TEST000).size()).isEqualTo(3);
     }
 
     @Test
@@ -70,19 +70,44 @@ public class SQLiteButtonEventDAOTest {
         _saveFromNow(TimeUtils.A_MINUTE_AGO);
         _saveFromNow(TimeUtils.A_WEEK_AGO);
 
-        assertThat(dao.findDateRange(TimeUtils.minutesAgo(2), TimeUtils.aMinuteAgo()))
+        assertThat(dao.findAll(TimeUtils.minutesAgo(2), TimeUtils.aMinuteAgo()))
                 .hasSize(2);
 
-        assertThat(dao.findDateRange(null, TimeUtils.aMinuteAgo()))
+        assertThat(dao.findAll(null, TimeUtils.aMinuteAgo()))
                 .hasSize(3);
 
-        assertThat(dao.findDateRange(null, TimeUtils.now()))
+        assertThat(dao.findAll(null, TimeUtils.now()))
                 .hasSize(5);
 
-        assertThat(dao.findDateRange(TimeUtils.minutesAgo(5), null))
+        assertThat(dao.findAll(TimeUtils.minutesAgo(5), null))
                 .hasSize(4);
 
-        assertThat(dao.findDateRange(null, null))
+        assertThat(dao.findAll(null, null))
+                .isNotNull();
+
+    }
+
+    @Test
+    public void testIdRange() throws Exception {
+        _saveNow();
+        _saveNow();
+        _saveFromNow(TimeUtils.A_MINUTE_AGO);
+        _saveFromNow(TimeUtils.A_MINUTE_AGO);
+        _saveFromNow(TimeUtils.A_WEEK_AGO);
+
+        assertThat(dao.findById(ID_TEST000, TimeUtils.minutesAgo(2), TimeUtils.aMinuteAgo()))
+                .hasSize(2);
+
+        assertThat(dao.findById(ID_TEST000, null, TimeUtils.aMinuteAgo()))
+                .hasSize(3);
+
+        assertThat(dao.findById(ID_TEST000, null, TimeUtils.now()))
+                .hasSize(5);
+
+        assertThat(dao.findById(ID_TEST000, TimeUtils.minutesAgo(5), null))
+                .hasSize(4);
+
+        assertThat(dao.findById(ID_TEST000, null, null))
                 .isNotNull();
 
     }

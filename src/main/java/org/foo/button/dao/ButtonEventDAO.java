@@ -10,7 +10,8 @@ import java.util.Date;
  */
 public interface ButtonEventDAO {
     public void save(ButtonEvent event) throws Exception;
-    public Collection<ButtonEvent> findDateRange(Date from, Date till) throws Exception;
     public Collection<ButtonEvent> findAll() throws Exception;
-    public Collection<ButtonEvent> findAllById(String id) throws Exception;
+    public Collection<ButtonEvent> findAll(Date from, Date till) throws Exception;
+    public Collection<ButtonEvent> findById(String id) throws Exception;
+    public Collection<ButtonEvent> findById(String id, Date from, Date till) throws Exception;
 }
