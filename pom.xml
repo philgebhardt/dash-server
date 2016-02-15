@@ -84,9 +84,6 @@
       <artifactId>simpleslackapi</artifactId>
       <version>0.5.0</version>
     </dependency>
-
-
-
   </dependencies>
 
   <build>
@@ -98,7 +95,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.foo.Main</mainClass>
+              <mainClass>org.foo.app.Main</mainClass>
               <addClasspath>true</addClasspath>
             </manifest>
           </archive>
@@ -128,7 +125,7 @@
           <!-- MainClass in mainfest make a executable jar -->
           <archive>
             <manifest>
-              <mainClass>org.foo.Main</mainClass>
+              <mainClass>org.foo.app.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
