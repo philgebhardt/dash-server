@@ -1,7 +1,6 @@
 package org.foo.thread;
 
 import org.foo.button.dao.ButtonEventDAO;
-import org.foo.button.dao.impl.SQLiteButtonEventDAO;
 import org.foo.button.model.ButtonEvent;
 import org.foo.task.ButtonEventDAOTask;
 import org.pcap4j.core.*;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * Created by phil on 2/14/16.
