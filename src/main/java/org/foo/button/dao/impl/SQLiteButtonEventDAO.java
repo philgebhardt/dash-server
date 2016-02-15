@@ -11,20 +11,18 @@ import java.util.Date;
 /**
  * Created by phil on 2/14/16.
  */
-public class SQLiteButtonEventDAO implements ButtonEventDAO {
-
-    private Connection conn = null;
+public class SQLiteButtonEventDAO extends BaseSQLiteDAO implements ButtonEventDAO {
 
     public SQLiteButtonEventDAO() throws SQLException {
-        this(DriverManager.getConnection(String.format("jdbc:sqlite:%s", ".events.db")));
+        super();
     }
 
-    public SQLiteButtonEventDAO(Connection dbConnection) throws SQLException {
-        conn = dbConnection;
+    public SQLiteButtonEventDAO(Connection conn) throws SQLException {
+        super(conn);
     }
 
     public void save(ButtonEvent event) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO button_event (id,dttm_occurred) VALUES(?,?)");
+        PreparedStatement stmt = getConn().prepareStatement("INSERT INTO button_event (id,dttm_occurred) VALUES(?,?)");
         stmt.setString(1, event.getId());
         stmt.setDate(2, new java.sql.Date(event.getDtmOccured().getTime()));
         stmt.executeUpdate();
@@ -34,15 +32,15 @@ public class SQLiteButtonEventDAO implements ButtonEventDAO {
         PreparedStatement stmt;
 
         if(from==null && till==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event");
         } else if(till==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE dttm_occurred >= ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE dttm_occurred >= ?");
             stmt.setDate(1, new java.sql.Date(from.getTime()));
         } else if (from==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE dttm_occurred <= ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE dttm_occurred <= ?");
             stmt.setDate(1, new java.sql.Date(till.getTime()));
         } else {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE dttm_occurred BETWEEN ? AND ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE dttm_occurred BETWEEN ? AND ?");
             stmt.setDate(1, new java.sql.Date(from.getTime()));
             stmt.setDate(2, new java.sql.Date(till.getTime()));
         }
@@ -59,18 +57,18 @@ public class SQLiteButtonEventDAO implements ButtonEventDAO {
         PreparedStatement stmt;
 
         if(from==null && till==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE id = ?");
             stmt.setString(1, id);
         } else if(till==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred >= ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred >= ?");
             stmt.setString(1, id);
             stmt.setDate(2, new java.sql.Date(from.getTime()));
         } else if (from==null) {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred <= ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred <= ?");
             stmt.setString(1, id);
             stmt.setDate(2, new java.sql.Date(till.getTime()));
         } else {
-            stmt = conn.prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred BETWEEN ? AND ?");
+            stmt = getConn().prepareStatement("SELECT * FROM button_event WHERE id = ? AND dttm_occurred BETWEEN ? AND ?");
             stmt.setString(1, id);
             stmt.setDate(2, new java.sql.Date(from.getTime()));
             stmt.setDate(3, new java.sql.Date(till.getTime()));

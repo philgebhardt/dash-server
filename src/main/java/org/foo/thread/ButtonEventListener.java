@@ -1,7 +1,9 @@
 package org.foo.thread;
 
 import org.foo.button.dao.ButtonEventDAO;
+import org.foo.button.model.Button;
 import org.foo.button.model.ButtonEvent;
+import org.foo.org.foo.button.dao.ButtonDAO;
 import org.foo.task.ButtonEventDAOTask;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.EthernetPacket;
@@ -10,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by phil on 2/14/16.
@@ -32,19 +37,22 @@ public class ButtonEventListener extends ButtonEventDAOTask {
     private static final int SNAPLEN
             = Integer.getInteger(SNAPLEN_KEY, 65536); // [bytes]
     private static final Logger LOGGER = LoggerFactory.getLogger(ButtonEventListener.class);
-    private static final String IPADDRESS = ButtonEventListener.class.getName().toString() + "#IPADDRESS";
-    private static final String FILTER = ButtonEventListener.class.getName().toString() + "#FILTER";
+    public static final String IPADDRESS = ButtonEventListener.class.getName().toString() + ".IPADDRESS";
+    public static final String FILTER = ButtonEventListener.class.getName().toString() + ".FILTER";
+    private static final String FILTER_USEDB = "usedb";
     private String ip;
     private String filter;
 
-    public ButtonEventListener(String ip, String filter, ButtonEventDAO dao) {
-        super(dao);
-        this.filter = filter;
-        this.ip = ip;
+    public ButtonEventListener(String ip, String filter, ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO) {
+        super(buttonEventDAO, buttonDAO);
+        setFilter(filter);
+        setInterface(ip);
     }
 
     @Override
     public void run() {
+        System.out.println(IPADDRESS + ": " + ip);
+        System.out.println(FILTER + ": " + filter);
         System.out.println(COUNT_KEY + ": " + COUNT);
         System.out.println(READ_TIMEOUT_KEY + ": " + READ_TIMEOUT);
         System.out.println(SNAPLEN_KEY + ": " + SNAPLEN);
@@ -69,27 +77,22 @@ public class ButtonEventListener extends ButtonEventDAOTask {
                 );
             }
             PacketListener hardwareAddrListener
-                    = new PacketListener() {
-                /*
-                    sniff for packets and analyze the hardware address
-                 */
-                public void gotPacket(Packet packet) {
-                    if(packet instanceof EthernetPacket) {
-                        EthernetPacket eth = (EthernetPacket) packet;
-                        String addr = eth.getHeader().getSrcAddr().toString();
-                        LOGGER.info(addr);
-                        Date now = new Date();
-                        ButtonEvent event = new ButtonEvent();
-                        event.setId(addr);
-                        event.setDtmOccured(now);
-                        try {
-                            getButtonEventDAO().save(event);
-                        } catch (Exception e) {
-                            LOGGER.error(e.getMessage(), e);
+                    = packet -> {
+                        if(packet instanceof EthernetPacket) {
+                            EthernetPacket eth = (EthernetPacket) packet;
+                            String addr1 = eth.getHeader().getSrcAddr().toString();
+                            LOGGER.info(addr1);
+                            Date now = new Date();
+                            ButtonEvent event = new ButtonEvent();
+                            event.setId(addr1);
+                            event.setDtmOccured(now);
+                            try {
+                                getButtonEventDAO().save(event);
+                            } catch (Exception e) {
+                                LOGGER.error(e.getMessage(), e);
+                            }
                         }
-                    }
-                }
-            };
+                    };
 
             try {
                 handle.loop(COUNT, hardwareAddrListener);
@@ -102,7 +105,47 @@ public class ButtonEventListener extends ButtonEventDAOTask {
         }
     }
 
+    private String _parseFilter(String filterParam) {
+        String filterStr = null;
+        if(FILTER_USEDB.equals(filterParam)) {
+            try {
+                Collection<Button> buttons = getButtonDAO().findAll();
+                if(buttons!=null && !buttons.isEmpty()) {
+                    Iterator<Button> iter = buttons.iterator();
+                    StringBuilder sb = new StringBuilder("ether host ");
+                    do {
+                        sb.append(iter.next().getId());
+                        if(iter.hasNext()) {
+                            sb.append(" or ");
+                        }
+                    } while(iter.hasNext());
+                    filterStr=sb.toString();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("CRASH", e);
+            }
+        }
+        return filterStr;
+    }
+
     private void handleError(Exception e) {
         throw new RuntimeException("CRASH", e);
     }
+
+    public String getInterface() {
+        return ip;
+    }
+
+    public void setInterface(String iface) {
+        this.ip = iface;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = _parseFilter(filter);
+    }
+
 }

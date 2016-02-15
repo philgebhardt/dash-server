@@ -3,6 +3,7 @@ package org.foo.thread;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.ButtonEvent;
+import org.foo.org.foo.button.dao.ButtonDAO;
 import org.foo.task.ButtonEventDAOTask;
 import org.foo.util.JsonDateDeserializer;
 import spark.Request;
@@ -13,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-import static org.foo.util.JsonDateDeserializer.*;
 import static spark.Spark.get;
 
 /**
@@ -23,8 +23,8 @@ public class SparkWebListener extends ButtonEventDAOTask {
 
     private ObjectMapper mapper;
 
-    public SparkWebListener(ButtonEventDAO dao) {
-        super(dao);
+    public SparkWebListener(ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO) {
+        super(buttonEventDAO, buttonDAO);
         mapper = new ObjectMapper();
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm a z"));
     }
@@ -39,12 +39,12 @@ public class SparkWebListener extends ButtonEventDAOTask {
             return mapper.writeValueAsString(events);
         });
 
-        get("/events/", (req, res) -> {
-            DateParams dateParams = _getDateParams(req);
-            Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
-            _prepareResponse(req, res);
-            return mapper.writeValueAsString(events);
-        });
+//        get("/events/", (req, res) -> {
+//            DateParams dateParams = _getDateParams(req);
+//            Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
+//            _prepareResponse(req, res);
+//            return mapper.writeValueAsString(events);
+//        });
 
         get("/events/:id", (req, res) -> {
             String id = req.params("id");
@@ -58,8 +58,8 @@ public class SparkWebListener extends ButtonEventDAOTask {
     private DateParams _getDateParams(Request req) throws ParseException {
         String fromStr = req.queryParams("from");
         String tillStr = req.queryParams("till");
-        Date from = (fromStr!=null) ? stringToDate(fromStr) : null;
-        Date till = (tillStr!=null) ? stringToDate(tillStr) : null;
+        Date from = (fromStr!=null) ? JsonDateDeserializer.stringToDate(fromStr) : null;
+        Date till = (tillStr!=null) ? JsonDateDeserializer.stringToDate(tillStr) : null;
         return new DateParams(from,till);
     }
 
