@@ -9,6 +9,7 @@ import org.foo.thread.ButtonEventListener;
 import org.foo.thread.SparkWebListener;
 
 import java.io.File;
+import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
@@ -27,8 +28,9 @@ public class ListenerFactory {
             // Create DB Connections for the DAO Objects
             String dbPath = config.getProperty("db", ".dash.db");
             File dbFile = new File(dbPath);
-            this.buttonEventDAO = new SQLiteButtonEventDAO(DriverManager.getConnection(String.format("jdbc:sqlite:%s", dbFile.getAbsolutePath())));
-            this.buttonDAO = new SQLiteButtonDAO(DriverManager.getConnection(String.format("jdbc:sqlite:%s", dbFile.getAbsolutePath())));
+            Connection conn = DriverManager.getConnection(String.format("jdbc:sqlite:%s", dbFile.getAbsolutePath()));
+            this.buttonEventDAO = new SQLiteButtonEventDAO(conn);
+            this.buttonDAO = new SQLiteButtonDAO(conn);
 
         } catch (Exception e) {
             throw new RuntimeException("CRASH", e);
