@@ -60,6 +60,10 @@ public class JsonButtonEventDAO implements ButtonEventDAO {
         return null;
     }
 
+    public Collection<ButtonEvent> findAllById(String id) throws Exception {
+        return null;
+    }
+
     public File getDbFile() {
         return dbFile;
     }

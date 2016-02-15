@@ -1,5 +1,9 @@
 package org.foo.button.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.foo.util.JsonDateSerializer;
+
 import java.util.Date;
 
 /**
@@ -7,6 +11,8 @@ import java.util.Date;
  */
 public class ButtonEvent {
     private String id;
+
+    @JsonSerialize(using=JsonDateSerializer.class)
     private Date dtmOccured;
 
     public Date getDtmOccured() {
