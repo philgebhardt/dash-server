@@ -25,23 +25,27 @@ import java.util.*;
 public class NewButtonEventListener extends ButtonEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NewButtonEventListener.class);
-    private final ButtonDAO newButtonDAO;
+    private ButtonDAO newButtonDAO;
+    private ButtonDAO ignoreButtonDAO;
 
     private ButtonEventCache cache;
     private int occurences;
 
-    public NewButtonEventListener(String iface, ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO, ButtonDAO newButtonDAO) {
+    public NewButtonEventListener(String iface, ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO, ButtonDAO ignoreButtonDAO, ButtonDAO newButtonDAO) {
         super(buttonEventDAO, buttonDAO);
         setInterface(iface);
         setOccurences(3);
         // allow the listener to listen for twice the number of packets necessary for discovery
         setCount(getOccurences()*2);
+        this.ignoreButtonDAO = ignoreButtonDAO;
         this.newButtonDAO = newButtonDAO;
         this.cache = new ButtonEventCache();
         this.cache.setExpirationTime(30*1000); // 30 seconds expire time on discovery packets
         try {
-            // exclude all currently known buttons
-            setFilter(ButtonFilterUtils.arpExcludeButtons(buttonDAO.findAll()));
+            // exclude all currently known/ignored buttons
+            Collection<Button> buttons = buttonDAO.findAll();
+            buttons.addAll(ignoreButtonDAO.findAll());
+            setFilter(ButtonFilterUtils.arpExcludeButtons(buttons));
         } catch(Exception e) {
             throw new RuntimeException("CRASH", e);
         }

@@ -23,6 +23,7 @@ public class ListenerFactory {
     private ButtonEventDAO buttonEventDAO;
     private final ButtonDAO buttonDAO;
     private ButtonDAO newButtonDAO;
+    private ButtonDAO ignoreButtonDAO;
 
     private ListenerFactory(StartupConfig config) {
         try {
@@ -36,6 +37,8 @@ public class ListenerFactory {
             ((SQLiteButtonEventDAO)buttonEventDAO).setTableName("button_event");
             this.buttonDAO = new SQLiteButtonDAO(conn);
             ((SQLiteButtonDAO)buttonDAO).setTableName("button");
+            this.ignoreButtonDAO = new SQLiteButtonDAO(conn);
+            ((SQLiteButtonDAO)ignoreButtonDAO).setTableName("ignore_button");
             this.newButtonDAO = new SQLiteButtonDAO(conn);
             ((SQLiteButtonDAO)newButtonDAO).setTableName("new_button");
         } catch (Exception e) {
@@ -54,7 +57,7 @@ public class ListenerFactory {
     }
 
     public SparkWebListener newWebListener() {
-        return new SparkWebListener(getButtonEventDAO(), getButtonDAO(), getNewButtonDAO(), this);
+        return new SparkWebListener(getButtonEventDAO(), getButtonDAO(), getIgnoreButtonDAO(), getNewButtonDAO(), this);
     }
 
     public ButtonEventDAO getButtonEventDAO() {
@@ -71,7 +74,7 @@ public class ListenerFactory {
 
     public Runnable newButtonDiscoveryListener() {
         String iface = config.getProperty("iface", "localhost");
-        return new NewButtonEventListener(iface, getButtonEventDAO(), getButtonDAO(), getNewButtonDAO());
+        return new NewButtonEventListener(iface, getButtonEventDAO(), getButtonDAO(), getIgnoreButtonDAO(), getNewButtonDAO());
     }
 
     public ButtonDAO getNewButtonDAO() {
@@ -80,5 +83,13 @@ public class ListenerFactory {
 
     public void setNewButtonDAO(ButtonDAO newButtonDAO) {
         this.newButtonDAO = newButtonDAO;
+    }
+
+    public ButtonDAO getIgnoreButtonDAO() {
+        return ignoreButtonDAO;
+    }
+
+    public void setIgnoreButtonDAO(ButtonDAO ignoreButtonDAO) {
+        this.ignoreButtonDAO = ignoreButtonDAO;
     }
 }

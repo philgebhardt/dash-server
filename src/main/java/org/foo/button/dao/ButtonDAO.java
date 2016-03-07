@@ -14,4 +14,7 @@ public interface ButtonDAO {
     public void save(Button button) throws SQLException;
     public Collection<Button> findAll() throws SQLException;
     public void saveAll(Collection<Button> buttons);
+
+    public void delete(Button button) throws SQLException;
+    public void deleteAll(Collection<Button> buttons) throws SQLException;
 }

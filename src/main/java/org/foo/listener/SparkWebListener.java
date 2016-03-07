@@ -1,5 +1,6 @@
 package org.foo.listener;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.Button;
@@ -30,9 +31,11 @@ public class SparkWebListener extends ButtonEventDAOTask {
     private TaskController controller;
     private ListenerFactory listenerFactory;
     private ButtonDAO newButtonDAO;
+    private ButtonDAO ignoreButtonDAO;
 
-    public SparkWebListener(ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO, ButtonDAO newButtonDAO, ListenerFactory listenerFactory) {
+    public SparkWebListener(ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO, ButtonDAO ignoreButtonDAO, ButtonDAO newButtonDAO, ListenerFactory listenerFactory) {
         super(buttonEventDAO, buttonDAO);
+        this.ignoreButtonDAO = ignoreButtonDAO;
         this.newButtonDAO = newButtonDAO;
         this.listenerFactory = listenerFactory;
         this.controller = new BaseTaskController();
@@ -102,6 +105,30 @@ public class SparkWebListener extends ButtonEventDAOTask {
             _prepareResponse(req, res);
             return mapper.writeValueAsString(buttons);
         });
+
+        post("/new/buttons/:id", (req, res) -> {
+            String id = req.params("id");
+            Button button = getNewButtonDAO().findById(id);
+            getButtonDAO().save(button);
+            getNewButtonDAO().delete(button);
+            res.status(204);
+            return "";
+        });
+
+        get("/ignore/buttons", (req, res) -> {
+            Collection<Button> buttons = getIgnoreButtonDAO().findAll();
+            _prepareResponse(req, res);
+            return mapper.writeValueAsString(buttons);
+        });
+
+        post("/ignore/buttons", (req, res) -> {
+            Collection<Button> buttons = mapper.readValue(req.body(), new TypeReference<Collection<Button>>() {
+            });
+            getIgnoreButtonDAO().saveAll(buttons);
+            getNewButtonDAO().deleteAll(buttons);
+            res.status(204);
+            return "";
+        });
     }
 
     private DateParams _getDateParams(Request req) throws ParseException {
@@ -127,6 +154,14 @@ public class SparkWebListener extends ButtonEventDAOTask {
 
     public void setNewButtonDAO(ButtonDAO newButtonDAO) {
         this.newButtonDAO = newButtonDAO;
+    }
+
+    public ButtonDAO getIgnoreButtonDAO() {
+        return ignoreButtonDAO;
+    }
+
+    public void setIgnoreButtonDAO(ButtonDAO ignoreButtonDAO) {
+        this.ignoreButtonDAO = ignoreButtonDAO;
     }
 
     private class DateParams {

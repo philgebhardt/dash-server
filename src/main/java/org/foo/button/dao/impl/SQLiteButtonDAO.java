@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Created by phil on 2/15/16.
@@ -61,6 +62,7 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
             PreparedStatement stmt = getConn().prepareStatement("UPDATE "+getTableName()+" SET id = ?, name = ? WHERE id = ?");
             stmt.setString(1, button.getId());
             stmt.setString(2, button.getName());
+            stmt.setString(3, button.getId());
             stmt.executeUpdate();
         } else {
             PreparedStatement stmt = getConn().prepareStatement("INSERT INTO "+getTableName()+" (id,name) VALUES(?,?)");
@@ -93,5 +95,33 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void delete(Button button) throws SQLException {
+        PreparedStatement stmt = getConn().prepareStatement("DELETE FROM "+getTableName()+" WHERE id =?");
+        stmt.setString(1, button.getId());
+        stmt.executeUpdate();
+    }
+
+    @Override
+    public void deleteAll(Collection<Button> buttons) throws SQLException {
+        PreparedStatement stmt = getConn().prepareStatement("DELETE FROM "+getTableName()+" WHERE "+ _idIn(buttons));
+        Iterator<Button> iter = buttons.iterator();
+        int i = 1;
+        while(iter.hasNext()) {
+            stmt.setString(i++, iter.next().getId());
+        }
+        stmt.executeUpdate();
+    }
+
+    private String _idIn(Collection<Button> buttons) {
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < buttons.size(); i++) {
+            if (i != 0)
+                placeholders.append(", ");
+            placeholders.append("?");
+        }
+        return "id IN (" + placeholders.toString() + ")";
     }
 }
