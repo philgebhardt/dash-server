@@ -31,6 +31,7 @@ public class ButtonLoaderTest extends SQLiteDBTest {
     @Test
     public void test() throws SQLException, IOException {
         ButtonDAO buttonDAO = new SQLiteButtonDAO(getConn());
+        ((SQLiteButtonDAO)buttonDAO).setTableName("button");
         ButtonLoader loader = new ButtonLoader(buttonDAO);
         loader.load(new File("src/test/resources/buttons.json"));
         assertThat(buttonDAO.findAll()).hasSize(2);

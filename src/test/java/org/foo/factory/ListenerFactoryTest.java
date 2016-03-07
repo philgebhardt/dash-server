@@ -2,22 +2,15 @@ package org.foo.factory;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.commons.io.FileUtils;
 import org.foo.app.StartupConfig;
-import org.foo.button.dao.impl.SQLiteButtonDAO;
-import org.foo.thread.ButtonEventListener;
+import org.foo.listener.ButtonEventListener;
 import org.foo.util.SQLiteDBTest;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Created by phil on 2/15/16.

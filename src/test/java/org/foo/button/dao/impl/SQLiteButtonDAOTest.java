@@ -31,6 +31,7 @@ public class SQLiteButtonDAOTest {
         Statement stmt = conn.createStatement();
         stmt.executeUpdate(FileUtils.readFileToString(new File("src/main/resources/sql/sqlite3/button/button_ddl.sql")));
         dao = new SQLiteButtonDAO(conn);
+        ((SQLiteButtonDAO)dao).setTableName("button");
     }
 
     @AfterMethod
@@ -60,29 +61,4 @@ public class SQLiteButtonDAOTest {
 //        button.setDateCreated(dateCreated);
         dao.save(button);
     }
-
-//    @Test
-//    public void findRange() throws Exception {
-//        _saveNow();
-//        _saveNow();
-//        _saveFromNow(TimeUtils.A_MINUTE_AGO);
-//        _saveFromNow(TimeUtils.A_MINUTE_AGO);
-//        _saveFromNow(TimeUtils.A_WEEK_AGO);
-//
-//        assertThat(dao.findAll(TimeUtils.minutesAgo(2), TimeUtils.aMinuteAgo()))
-//                .hasSize(2);
-//
-//        assertThat(dao.findAll(null, TimeUtils.aMinuteAgo()))
-//                .hasSize(3);
-//
-//        assertThat(dao.findAll(null, TimeUtils.now()))
-//                .hasSize(5);
-//
-//        assertThat(dao.findAll(TimeUtils.minutesAgo(5), null))
-//                .hasSize(4);
-//
-//        assertThat(dao.findAll(null, null))
-//                .isNotNull();
-//
-//    }
 }

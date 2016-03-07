@@ -1,11 +1,14 @@
-package org.foo.thread;
+package org.foo.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.model.Button;
 import org.foo.button.model.ButtonEvent;
 import org.foo.button.dao.ButtonDAO;
+import org.foo.factory.ListenerFactory;
+import org.foo.task.BaseTaskController;
 import org.foo.task.ButtonEventDAOTask;
+import org.foo.task.TaskController;
 import org.foo.util.JsonDateDeserializer;
 import spark.Request;
 import spark.Response;
@@ -24,29 +27,45 @@ import static spark.Spark.post;
 public class SparkWebListener extends ButtonEventDAOTask {
 
     private ObjectMapper mapper;
+    private TaskController controller;
+    private ListenerFactory listenerFactory;
+    private ButtonDAO newButtonDAO;
 
-    public SparkWebListener(ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO) {
+    public SparkWebListener(ButtonEventDAO buttonEventDAO, ButtonDAO buttonDAO, ButtonDAO newButtonDAO, ListenerFactory listenerFactory) {
         super(buttonEventDAO, buttonDAO);
+        this.newButtonDAO = newButtonDAO;
+        this.listenerFactory = listenerFactory;
+        this.controller = new BaseTaskController();
         mapper = new ObjectMapper();
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm a z"));
     }
 
     @Override
     public void run() {
+        loadEventsApi();
+        loadButtonsApi();
+        loadDiscoveryApi();
+    }
 
+    private void loadDiscoveryApi() {
+        post("/discovery/button", (req, res) -> {
+            String id = String.format("ButtonDiscoveryTask%d",System.currentTimeMillis());
+            Runnable listener = listenerFactory.newButtonDiscoveryListener();
+            controller.putTask(id, listener);
+            controller.start(id);
+            res.status(200);
+            return id;
+        });
+    }
+
+    private void loadEventsApi() {
+        // TODO: Get paths to work with trailing slashes
         get("/events", (req, res) -> {
             DateParams dateParams = _getDateParams(req);
             Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
             _prepareResponse(req, res);
             return mapper.writeValueAsString(events);
         });
-
-//        get("/events/", (req, res) -> {
-//            DateParams dateParams = _getDateParams(req);
-//            Collection<ButtonEvent> events = getButtonEventDAO().findAll(dateParams.FROM, dateParams.TILL);
-//            _prepareResponse(req, res);
-//            return mapper.writeValueAsString(events);
-//        });
 
         get("/events/:id", (req, res) -> {
             String id = req.params("id");
@@ -55,7 +74,9 @@ public class SparkWebListener extends ButtonEventDAOTask {
             _prepareResponse(req, res);
             return mapper.writeValueAsString(events);
         });
+    }
 
+    private void loadButtonsApi() {
         get("/buttons", (req, res) -> {
             Collection<Button> buttons = getButtonDAO().findAll();
             _prepareResponse(req, res);
@@ -75,6 +96,12 @@ public class SparkWebListener extends ButtonEventDAOTask {
             res.status(204);
             return "";
         });
+
+        get("/new/buttons", (req, res) -> {
+            Collection<Button> buttons = getNewButtonDAO().findAll();
+            _prepareResponse(req, res);
+            return mapper.writeValueAsString(buttons);
+        });
     }
 
     private DateParams _getDateParams(Request req) throws ParseException {
@@ -88,6 +115,18 @@ public class SparkWebListener extends ButtonEventDAOTask {
     private void _prepareResponse(Request req, Response res) {
         res.header("Content-Type", "application/json");
 
+    }
+
+    public TaskController getController() {
+        return controller;
+    }
+
+    public ButtonDAO getNewButtonDAO() {
+        return newButtonDAO;
+    }
+
+    public void setNewButtonDAO(ButtonDAO newButtonDAO) {
+        this.newButtonDAO = newButtonDAO;
     }
 
     private class DateParams {

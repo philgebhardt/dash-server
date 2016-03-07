@@ -25,6 +25,7 @@ public class SQLiteButtonEventDAOTest {
         Statement stmt = conn.createStatement();
         stmt.executeUpdate(FileUtils.readFileToString(new File("src/main/resources/sql/sqlite3/button/button_ddl.sql")));
         dao = new SQLiteButtonEventDAO(conn);
+        ((SQLiteButtonEventDAO)dao).setTableName("button_event");
     }
 
     @AfterMethod

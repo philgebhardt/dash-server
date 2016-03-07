@@ -5,8 +5,10 @@ import org.foo.button.dao.ButtonEventDAO;
 import org.foo.button.dao.impl.SQLiteButtonDAO;
 import org.foo.button.dao.impl.SQLiteButtonEventDAO;
 import org.foo.button.dao.ButtonDAO;
-import org.foo.thread.ButtonEventListener;
-import org.foo.thread.SparkWebListener;
+import org.foo.listener.ButtonEventListener;
+import org.foo.listener.ExistingButtonEventListener;
+import org.foo.listener.NewButtonEventListener;
+import org.foo.listener.SparkWebListener;
 
 import java.io.File;
 import java.sql.Connection;
@@ -20,6 +22,7 @@ public class ListenerFactory {
     private StartupConfig config;
     private ButtonEventDAO buttonEventDAO;
     private final ButtonDAO buttonDAO;
+    private ButtonDAO newButtonDAO;
 
     private ListenerFactory(StartupConfig config) {
         try {
@@ -30,8 +33,11 @@ public class ListenerFactory {
             File dbFile = new File(dbPath);
             Connection conn = DriverManager.getConnection(String.format("jdbc:sqlite:%s", dbFile.getAbsolutePath()));
             this.buttonEventDAO = new SQLiteButtonEventDAO(conn);
+            ((SQLiteButtonEventDAO)buttonEventDAO).setTableName("button_event");
             this.buttonDAO = new SQLiteButtonDAO(conn);
-
+            ((SQLiteButtonDAO)buttonDAO).setTableName("button");
+            this.newButtonDAO = new SQLiteButtonDAO(conn);
+            ((SQLiteButtonDAO)newButtonDAO).setTableName("new_button");
         } catch (Exception e) {
             throw new RuntimeException("CRASH", e);
         }
@@ -39,8 +45,8 @@ public class ListenerFactory {
 
     public ButtonEventListener newButtonEventListener() {
         String iface = config.getProperty("iface", "localhost");
-        String filter = config.getProperty("filter", "");
-        return new ButtonEventListener(iface, filter, getButtonEventDAO(), getButtonDAO());
+        String filter = config.getProperty("filter", "usedb");
+        return new ExistingButtonEventListener(iface, filter, getButtonEventDAO(), getButtonDAO());
     }
 
     public static ListenerFactory newInstance( StartupConfig config) {
@@ -48,7 +54,7 @@ public class ListenerFactory {
     }
 
     public SparkWebListener newWebListener() {
-        return new SparkWebListener(getButtonEventDAO(), getButtonDAO());
+        return new SparkWebListener(getButtonEventDAO(), getButtonDAO(), getNewButtonDAO(), this);
     }
 
     public ButtonEventDAO getButtonEventDAO() {
@@ -61,5 +67,18 @@ public class ListenerFactory {
 
     public ButtonDAO getButtonDAO() {
         return buttonDAO;
+    }
+
+    public Runnable newButtonDiscoveryListener() {
+        String iface = config.getProperty("iface", "localhost");
+        return new NewButtonEventListener(iface, getButtonEventDAO(), getButtonDAO(), getNewButtonDAO());
+    }
+
+    public ButtonDAO getNewButtonDAO() {
+        return newButtonDAO;
+    }
+
+    public void setNewButtonDAO(ButtonDAO newButtonDAO) {
+        this.newButtonDAO = newButtonDAO;
     }
 }

@@ -13,6 +13,5 @@ public interface ButtonDAO {
     public Collection<Button> findByName(String id) throws SQLException;
     public void save(Button button) throws SQLException;
     public Collection<Button> findAll() throws SQLException;
-
     public void saveAll(Collection<Button> buttons);
 }

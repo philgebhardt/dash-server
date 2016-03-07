@@ -15,7 +15,6 @@ import java.util.Collection;
  */
 public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
 
-
     public SQLiteButtonDAO() throws SQLException {
         super();
     }
@@ -26,7 +25,7 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
 
     @Override
     public Button findById(String id) throws SQLException {
-        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM button WHERE id = ?");
+        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM "+getTableName()+" WHERE id = ?");
         stmt.setString(1, id);
         ResultSet resultSet = stmt.executeQuery();
         Button button;
@@ -43,7 +42,7 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
     @Override
     public Collection<Button> findByName(String name) throws SQLException {
         Collection<Button> buttons = new ArrayList<>();
-        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM button WHERE name = ?");
+        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM "+getTableName()+" WHERE name = ?");
         stmt.setString(2, name);
         ResultSet resultSet = stmt.executeQuery();
         while(resultSet.next()) {
@@ -59,12 +58,12 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
     public void save(Button button) throws SQLException {
         boolean buttonExists = findById(button.getId())!=null;
         if(buttonExists) {
-            PreparedStatement stmt = getConn().prepareStatement("UPDATE button SET id = ?, name = ? WHERE id = ?");
+            PreparedStatement stmt = getConn().prepareStatement("UPDATE "+getTableName()+" SET id = ?, name = ? WHERE id = ?");
             stmt.setString(1, button.getId());
             stmt.setString(2, button.getName());
             stmt.executeUpdate();
         } else {
-            PreparedStatement stmt = getConn().prepareStatement("INSERT INTO button (id,name) VALUES(?,?)");
+            PreparedStatement stmt = getConn().prepareStatement("INSERT INTO "+getTableName()+" (id,name) VALUES(?,?)");
             stmt.setString(1, button.getId());
             stmt.setString(2, button.getName());
             stmt.executeUpdate();
@@ -74,7 +73,7 @@ public class SQLiteButtonDAO extends BaseSQLiteDAO implements ButtonDAO {
     @Override
     public Collection<Button> findAll() throws SQLException {
         Collection<Button> buttons = new ArrayList<>();
-        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM button");
+        PreparedStatement stmt = getConn().prepareStatement("SELECT * FROM "+getTableName());
         ResultSet resultSet = stmt.executeQuery();
         while(resultSet.next()) {
             Button button = new Button();

@@ -9,6 +9,8 @@ import java.sql.SQLException;
  */
 public class BaseSQLiteDAO {
     private Connection conn = null;
+    private String tableName;
+
 
     public BaseSQLiteDAO() throws SQLException {
         this(DriverManager.getConnection(String.format("jdbc:sqlite:%s", ".dash.db")));
@@ -24,5 +26,13 @@ public class BaseSQLiteDAO {
 
     public void setConn(Connection conn) {
         this.conn = conn;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 }
